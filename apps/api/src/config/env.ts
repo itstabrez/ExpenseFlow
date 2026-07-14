@@ -14,10 +14,17 @@ const envSchema = z.object({
   ACCESS_TOKEN_TTL: z.string().default("15m"),
   REFRESH_TOKEN_TTL: z.string().default("7d"),
   WEB_APP_URL: z.string().url().default("http://localhost:3000"),
+  CORS_ORIGINS: z.string().optional(),
   API_BASE_URL: z.string().url().default("http://localhost:4000"),
   COOKIE_SECURE: z.coerce.boolean().default(false),
+  COOKIE_SAME_SITE: z.enum(["lax", "strict", "none"]).default("lax"),
   UPLOAD_DIR: z.string().default("uploads"),
   MAX_UPLOAD_SIZE: z.coerce.number().int().positive().default(5 * 1024 * 1024)
 });
 
 export const env = envSchema.parse(process.env);
+
+export const corsOrigins = [
+  env.WEB_APP_URL,
+  ...(env.CORS_ORIGINS?.split(",").map((origin) => origin.trim()).filter(Boolean) ?? [])
+];

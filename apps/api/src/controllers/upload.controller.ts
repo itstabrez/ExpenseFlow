@@ -42,5 +42,5 @@ export const uploadReceipt = asyncHandler(async (req, res) => {
   if (!req.file) {
     throw new ValidationError("Receipt file is required");
   }
-  ok(res, { receiptUrl: `/uploads/${req.file.filename}` }, 201);
+  ok(res, { receiptUrl: `${env.API_BASE_URL.replace(/\/$/, "")}/uploads/${req.file.filename}` }, 201);
 });

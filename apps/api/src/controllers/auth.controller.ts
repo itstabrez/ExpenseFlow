@@ -9,7 +9,7 @@ const refreshCookieName = "expenseflow_refresh";
 const cookieOptions = {
   httpOnly: true,
   secure: env.COOKIE_SECURE,
-  sameSite: "lax" as const,
+  sameSite: env.COOKIE_SAME_SITE,
   path: "/api/v1/auth",
   maxAge: 7 * 24 * 60 * 60 * 1000
 };
