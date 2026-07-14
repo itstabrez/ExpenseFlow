@@ -24,7 +24,13 @@ const envSchema = z.object({
 
 export const env = envSchema.parse(process.env);
 
-export const corsOrigins = [
-  env.WEB_APP_URL,
-  ...(env.CORS_ORIGINS?.split(",").map((origin) => origin.trim()).filter(Boolean) ?? [])
+const defaultCorsOrigins = [
+  "http://localhost:3000",
+  "https://expense-flow-web-beta.vercel.app"
 ];
+
+export const corsOrigins = Array.from(new Set([
+  env.WEB_APP_URL,
+  ...defaultCorsOrigins,
+  ...(env.CORS_ORIGINS?.split(",").map((origin) => origin.trim()).filter(Boolean) ?? [])
+]));
