@@ -1,0 +1,12 @@
+process.env.DATABASE_URL ??= "postgresql://expenseflow:expenseflow@localhost:5432/expenseflow?schema=public";
+process.env.PORT ??= "4001";
+process.env.NODE_ENV = "test";
+process.env.JWT_ACCESS_SECRET ??= "test-access-secret-change-me-32-characters";
+process.env.JWT_REFRESH_SECRET ??= "test-refresh-secret-change-me-32-characters";
+process.env.ACCESS_TOKEN_TTL ??= "15m";
+process.env.REFRESH_TOKEN_TTL ??= "7d";
+process.env.WEB_APP_URL ??= "http://localhost:3000";
+process.env.API_BASE_URL ??= "http://localhost:4001";
+process.env.COOKIE_SECURE ??= "false";
+process.env.UPLOAD_DIR ??= "uploads-test";
+process.env.MAX_UPLOAD_SIZE ??= "5242880";
