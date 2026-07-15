@@ -292,8 +292,8 @@ export const claimService = {
       return toClaimDto(updated);
     }),
 
-  submit: async (actor: Actor, claimId: string, version: number, resubmit = false) =>
-    prisma.$transaction(async (tx) => {
+  submit: async (actor: Actor, claimId: string, version: number, resubmit = false) => {
+    const result = await prisma.$transaction(async (tx) => {
       const claim = await tx.claim.findFirst({ where: { id: claimId, deletedAt: null } });
       if (!claim) {
         throw new NotFoundError("Claim not found");
@@ -318,12 +318,14 @@ export const claimService = {
         toStatus: ClaimStatus.PENDING_MANAGER,
         step: WorkflowStep.MANAGER
       });
-      notifyClaimChanged(claim.employeeId, toClaimDto(updated));
       return toClaimDto(updated);
-    }),
+    });
+    notifyClaimChanged([result.employeeId, result.pendingWithUserId, result.assignedManagerId], result);
+    return result;
+  },
 
-  managerApprove: async (actor: Actor, claimId: string, version: number, reapprove = false) =>
-    prisma.$transaction(async (tx) => {
+  managerApprove: async (actor: Actor, claimId: string, version: number, reapprove = false) => {
+    const result = await prisma.$transaction(async (tx) => {
       const claim = await tx.claim.findFirst({ where: { id: claimId, deletedAt: null } });
       if (!claim) {
         throw new NotFoundError("Claim not found");
@@ -352,12 +354,14 @@ export const claimService = {
         toStatus: ClaimStatus.PENDING_SENIOR_MANAGER,
         step: WorkflowStep.SENIOR_MANAGER
       });
-      notifyClaimChanged(claim.employeeId, toClaimDto(updated));
       return toClaimDto(updated);
-    }),
+    });
+    notifyClaimChanged([result.employeeId, result.pendingWithUserId, result.assignedManagerId, result.assignedSeniorManagerId], result);
+    return result;
+  },
 
-  managerReject: async (actor: Actor, claimId: string, version: number, note: string) =>
-    prisma.$transaction(async (tx) => {
+  managerReject: async (actor: Actor, claimId: string, version: number, note: string) => {
+    const result = await prisma.$transaction(async (tx) => {
       const claim = await tx.claim.findFirst({ where: { id: claimId, deletedAt: null } });
       if (!claim) {
         throw new NotFoundError("Claim not found");
@@ -378,12 +382,14 @@ export const claimService = {
         step: WorkflowStep.COMPLETED,
         note: note ?? undefined
       });
-      notifyClaimChanged(claim.employeeId, toClaimDto(updated));
       return toClaimDto(updated);
-    }),
+    });
+    notifyClaimChanged([result.employeeId, result.assignedManagerId], result);
+    return result;
+  },
 
-  seniorAction: async (actor: Actor, claimId: string, version: number, action: "approve" | "reject" | "revert", note?: string) =>
-    prisma.$transaction(async (tx) => {
+  seniorAction: async (actor: Actor, claimId: string, version: number, action: "approve" | "reject" | "revert", note?: string) => {
+    const result = await prisma.$transaction(async (tx) => {
       const claim = await tx.claim.findFirst({ where: { id: claimId, deletedAt: null } });
       if (!claim) {
         throw new NotFoundError("Claim not found");
@@ -415,12 +421,14 @@ export const claimService = {
         step: target.step
       };
       await createHistory(tx, note ? { ...historyData, note } : historyData);
-      notifyClaimChanged(claim.employeeId, toClaimDto(updated));
       return toClaimDto(updated);
-    }),
+    });
+    notifyClaimChanged([result.employeeId, result.pendingWithUserId, result.assignedManagerId, result.assignedSeniorManagerId], result);
+    return result;
+  },
 
-  managerRevertToEmployee: async (actor: Actor, claimId: string, version: number, note: string) =>
-    prisma.$transaction(async (tx) => {
+  managerRevertToEmployee: async (actor: Actor, claimId: string, version: number, note: string) => {
+    const result = await prisma.$transaction(async (tx) => {
       const claim = await tx.claim.findFirst({ where: { id: claimId, deletedAt: null } });
       if (!claim) {
         throw new NotFoundError("Claim not found");
@@ -440,9 +448,11 @@ export const claimService = {
         step: WorkflowStep.EMPLOYEE,
         note
       });
-      notifyClaimChanged(claim.employeeId, toClaimDto(updated));
       return toClaimDto(updated);
-    }),
+    });
+    notifyClaimChanged([result.employeeId, result.pendingWithUserId, result.assignedManagerId], result);
+    return result;
+  },
 
   history: async (actor: Actor, claimId: string) => {
     await claimService.getById(actor, claimId);

@@ -149,8 +149,8 @@ The backend Supertest suite covers employee ownership, pending-claim edit blocki
 ## Deployment
 
 - Frontend: deploy `apps/web` to Vercel with `NEXT_PUBLIC_API_BASE_URL` set to the production API URL plus `/api/v1`.
-- Backend: deploy `apps/api` to Railway or Render.
-- Database: use Neon, Railway PostgreSQL, or another managed PostgreSQL service.
+- Backend: deploy `apps/api` to Railway.
+- Database: used Neon Service.
 - Run migrations in production with:
 
 ```bash
@@ -180,19 +180,3 @@ Set `COOKIE_SECURE=true`, strong JWT secrets, production `WEB_APP_URL`, and a pe
 - The admin reporting-line form accepts user IDs directly; a production UX would use searchable pickers.
 - SSE authenticates using a short-lived access token query parameter because native `EventSource` cannot set authorization headers.
 - Uploads are local-only in this implementation.
-
-## Live Walkthrough Talking Points
-
-- Central workflow service enforces role, assignment, state, and version in one transaction.
-- `pendingWithUserId` provides resource-level authorization beyond role checks.
-- Snapshotted approvers preserve workflow stability after reporting-line changes.
-- Refresh-token rotation stores only token hashes and revokes old sessions.
-- Shared Zod schemas reduce frontend/backend drift.
-
-## Interviewer-Friendly Small Changes
-
-- Add a finance-only role that can view approved claims.
-- Add a CSV export to the monthly report.
-- Add a receipt upload widget to the claim form.
-- Add status badges with stricter color semantics.
-- Add an admin reassignment flow for pending claims before deactivating a reviewer.

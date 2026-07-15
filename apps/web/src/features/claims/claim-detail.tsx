@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ExternalLink, FileText } from "lucide-react";
 import {
   ClaimStatus,
   RoleName,
@@ -42,6 +43,7 @@ export function ClaimDetail() {
     onSuccess: async () => {
       toast.push("Claim updated", "success");
       await queryClient.invalidateQueries({ queryKey: ["claim", params.claimId] });
+      await queryClient.invalidateQueries({ queryKey: ["claim", params.claimId, "history"] });
       await queryClient.invalidateQueries({ queryKey: ["claims"] });
     },
     onError: (error) => toast.push(apiErrorMessage(error), "error")
@@ -174,11 +176,18 @@ export function ClaimDetail() {
           </div>
         ))}
       </div>
-      {claim.receiptUrl ? (
-        <a className="text-sm font-medium text-leaf hover:underline" href={claim.receiptUrl} target="_blank" rel="noreferrer">
-          Open receipt
-        </a>
-      ) : null}
+      <div className="rounded-md border border-slate-200 bg-white p-4 shadow-panel">
+        <p className="text-xs uppercase text-slate-500">Receipt document</p>
+        {claim.receiptUrl ? (
+          <a className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-leaf hover:underline" href={claim.receiptUrl} target="_blank" rel="noreferrer">
+            <FileText size={16} />
+            Open uploaded receipt
+            <ExternalLink size={14} />
+          </a>
+        ) : (
+          <p className="mt-2 text-sm text-slate-500">No receipt uploaded</p>
+        )}
+      </div>
       {latestNote ? (
         <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
           <p className="font-semibold">Latest note</p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import type { LoginInput, SafeUser, SignupInput } from "@expense-flow/shared";
+import { statusLabels, type ClaimDto, type LoginInput, type SafeUser, type SignupInput } from "@expense-flow/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { api, apiErrorMessage } from "@/lib/api";
 import { setAccessToken } from "@/lib/auth-token";
@@ -53,14 +53,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) {
       return;
     }
-    const token = encodeURIComponent(getAccessToken() ?? "");
+    const accessToken = getAccessToken();
+    if (!accessToken) {
+      return;
+    }
+    const token = encodeURIComponent(accessToken);
     const base = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1").replace(/\/$/, "");
     const source = new EventSource(`${base}/events?accessToken=${token}`, { withCredentials: true });
-    source.addEventListener("claim-status", (event) => {
-      toast.push("A claim status changed", "info");
-      void queryClient.invalidateQueries({ queryKey: ["claims"] });
-      void queryClient.invalidateQueries({ queryKey: ["claim"] });
+    let showedConnectionError = false;
+    source.addEventListener("connected", () => {
+      toast.push("Live updates connected", "info");
     });
+    source.addEventListener("claim-status", (event) => {
+      const claim = JSON.parse(event.data) as ClaimDto;
+      queryClient.setQueryData(["claim", claim.id], claim);
+      toast.push(`${claim.claimNumber} is now ${statusLabels[claim.status]}`, "info");
+      void queryClient.invalidateQueries({ queryKey: ["claims"], refetchType: "active" });
+      void queryClient.invalidateQueries({ queryKey: ["claim", claim.id, "history"], refetchType: "active" });
+    });
+    source.onerror = () => {
+      if (!showedConnectionError) {
+        showedConnectionError = true;
+        toast.push("Live updates disconnected", "error");
+      }
+    };
     return () => source.close();
   }, [queryClient, toast, user]);
 

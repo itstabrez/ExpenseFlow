@@ -36,9 +36,9 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1", eventRoutes);
+app.use("/api/v1", uploadRoutes);
 app.use("/api/v1", claimRoutes);
 app.use("/api/v1", adminRoutes);
-app.use("/api/v1", uploadRoutes);
-app.use("/api/v1", eventRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
