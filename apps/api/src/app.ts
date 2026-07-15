@@ -13,11 +13,6 @@ import { errorHandler, notFoundHandler } from "./middleware/error-handler";
 
 export const app = express();
 
-app.use((_req, res, next) => {
-  res.setHeader("x-expenseflow-cors-origins", corsOrigins.join(","));
-  next();
-});
-
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(
   cors({
